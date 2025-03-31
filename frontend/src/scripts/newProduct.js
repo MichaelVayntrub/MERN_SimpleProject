@@ -1,4 +1,6 @@
 import '../newProduct.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const NewProductModal = ({ openNewProductModal, handleClose, handleSave, newProduct, setNewProduct }) => {
     return (

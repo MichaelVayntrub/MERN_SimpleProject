@@ -43,9 +43,14 @@ export const getFilteredProducts = async (req, res) => {
 };
 
 export const addFromJson = async (req, res) => {
-    await Product.deleteMany({});
-    await Product.insertMany(Items);
-    await getProducts(req,res);
+    try {
+        await Product.deleteMany({});
+        await Product.insertMany(Items);
+        await getProducts(req,res);
+        res.status(201).json({ success: true, message: 'Reset went successfully', data: product });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Reset failed', error: error.message });
+    }
 };
 
 export const addProduct = async (req, res) => {

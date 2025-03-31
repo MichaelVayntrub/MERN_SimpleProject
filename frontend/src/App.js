@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import { TbArrowBigUpLines, TbArrowBigDownLines } from "react-icons/tb";
-//import { getProducts } from "./scripts/product.js";
 import NewProductModal from "./scripts/newProduct";
 import DeleteProductModal from "./scripts/deleteProduct"
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 const App = () => {
@@ -43,16 +44,18 @@ const App = () => {
       console.log("Server response:", data);
 
       if (data.success) {
+        toast.success("המוצר נוסף בהצלחה");
         if (!suppliers.has(newProduct.supplier)) {
           setSuppliers(new Set([...suppliers, newProduct.supplier]));
         }
         setProducts(prev => [...prev, newProduct]);
         setOpenNewProductModal(false);
       } else {
-          alert(data.message);
+          toast.error(data.message);
           console.error("Error in response:", data.message);
       }
     } catch (error) {
+        toast.error("ההוספה נכשלה");
         console.error("Error:", error);
     }
   };
@@ -63,9 +66,15 @@ const App = () => {
       const res = await fetch("http://localhost:5000/products/reset");
       if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
       const data = await res.json();
-      setProducts(data.data);
-      setSuppliers(new Set(data.data.map(product => product.supplier)));
+      if (data.success) {
+        toast.success("האתחול בוצע בהצלחה")
+        setProducts(data.data);
+        setSuppliers(new Set(data.data.map(product => product.supplier)));
+      } else {
+        toast.error("האתחול נכשל")
+      }
     } catch (error) {
+        toast.error("תקלה בזמן האתחול")
         console.error("Error reseting products:", error);
     }
   };
@@ -85,13 +94,14 @@ const App = () => {
       const data = await response.json();
       console.log("Server response:", data);
       if (data.success == true) {
+        toast.success("המוצר נמחק בהצלחה");
         setProducts(data.data);
         setSuppliers(new Set(data.data.map(product => product.supplier)));
       } else { 
-      alert(data.message);
+        toast.error(data.message);
       }
     } catch (error) {
-        console.error("Error:", error);
+        toast.error("המחיקה נכשלה");
     }
   };
   const handleDeleteProductClick = () => {
@@ -128,21 +138,20 @@ const App = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerms]);
 
-  // API Call when debouncedSearch updates
   useEffect(() => {
     const sendDataToServer = async () => {
-      console.log("Sending to server:", searchTerms); // Debugging log
+      console.log("Sending to server:", searchTerms);
       try {
           const response = await fetch("http://localhost:5000/products", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ searchTerms }),  // Wrapped inside "searchTerms"
+              body: JSON.stringify({ searchTerms }),
           });
           const data = await response.json();
           console.log("Server response:", data);
 
         if (data.success) {
-            setProducts(data.data); // Update state with new products
+            setProducts(data.data);
         } else {
             console.error("Error in response:", data.message);
         }
@@ -166,7 +175,7 @@ const App = () => {
         }
     };
     fetchProducts();
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [openModal, setOpenModal] = useState(false);
@@ -218,7 +227,7 @@ const App = () => {
         value: selectedSupplier,
       }));
     } else {
-      alert("לא נבחר ספק");
+      toast.error("לא נבחר ספק");
     }
   };
 
@@ -250,13 +259,16 @@ const App = () => {
       });
   
       if (response.ok) {
+        toast.success("המחיר עודכן בהצלחה");
         const responseData = await response.json();
         console.log('Price updated successfully:', responseData);
       } else {
         setProducts(prevProducts => [...prevProducts]); 
         console.error('Error updating price:', response.statusText);
+        toast.error("העדכון נכשל");
       }
     } catch (error) {
+      toast.error("תקלה בזמן העדכון");
       console.error('Error in fetch request:', error);
     }
     setPercentage(0);
@@ -279,6 +291,7 @@ const App = () => {
   };
 
   return (
+    <><ToastContainer />
     <div className="app-container">
       <div className="price-form">
         <div className="supplier-row">
@@ -379,8 +392,8 @@ const App = () => {
                       <br />
                       {
                         product.discount === "up"
-                          ? <span className="up">{product.discount}({product.newPrice}%)</span>  // Green for positive (up)
-                          : <span className="down">{product.discount}({product.newPrice}%)</span>  // Red for negative (down)
+                          ? <span className="up">{product.discount}({product.newPrice}%)</span>  // Red for positive (up)
+                          : <span className="down">{product.discount}({product.newPrice}%)</span>  // Green for negative (down)
                       }
                     </>
                   )}
@@ -466,7 +479,8 @@ const App = () => {
         setDeleteId={setDeleteId}
       />
     </div>
-  )
+    </>
+  );
 }
 
 export default App;
