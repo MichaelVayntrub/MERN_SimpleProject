@@ -62,16 +62,27 @@ const App = () => {
  
   // Reset products //
   const handleResetClick = async () => {
+    setSearchTerms({
+      searchByBarcode: "",
+      searchByName: "",
+      searchBySupplier: "",
+    });
+
     try {
       const res = await fetch("http://localhost:5000/products/reset");
       if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
       const data = await res.json();
       if (data.success) {
         toast.success("האתחול בוצע בהצלחה")
-        setProducts(data.data);
-        setSuppliers(new Set(data.data.map(product => product.supplier)));
       } else {
         toast.error("האתחול נכשל")
+      }
+      {
+        const res = await fetch("http://localhost:5000/products");
+        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+        const data = await res.json();
+        setProducts(data.data);
+        setSuppliers(new Set(data.data.map(product => product.supplier)));
       }
     } catch (error) {
         toast.error("תקלה בזמן האתחול")
@@ -274,7 +285,12 @@ const App = () => {
     setPercentage(0);
     setChangeType(1);
     setOpenModal(false);
-  }
+    setUpdateData({
+      type: "",
+      value: ""
+    });
+    setSelectedProduct(null);
+  };
 
   const handleCloseModal = () => {
     setOpenModal(false);

@@ -46,8 +46,7 @@ export const addFromJson = async (req, res) => {
     try {
         await Product.deleteMany({});
         await Product.insertMany(Items);
-        await getProducts(req,res);
-        res.status(201).json({ success: true, message: 'Reset went successfully', data: product });
+        res.status(201).json({ success: true, message: 'Reset went successfully'});
     } catch (error) {
         res.status(500).json({ success: false, message: 'Reset failed', error: error.message });
     }
